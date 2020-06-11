@@ -1,0 +1,168 @@
+Обработчик onclick:
+⦁	Нельзя повесить более два обработчика
+⦁	Если повесить второй на тот же элемент, то сработает второй
+
+1.	const divElem = document.querySelector('.rect_div');
+2.	
+3.	divElem.onclick = function() {
+4.	    console.log('First')
+5.	}
+6.	
+7.	divElem.onclick = function() {
+8.	    console.log('Second')
+9.	}
+________________________________________________________________________________________________________________
+
+Метод addEventListener('событие', () => {
+
+}, {});
+Принимает три аргумента:
+⦁	Название события
+⦁	Функцию которая будет срабатывать на событие
+⦁	Дополнительный объект со свойствами
+
+1.	const elem = document.querySelector('.rect_div');
+2.	
+3.	elem.addEventListener('click', () => {
+4.	    console.log('div');
+5.	}, {}); - здесь объект с настройками о котором поговорим позже 
+6.	
+7.	elem.addEventListener('click', () => {
+8.	    console.log('div1');
+9.	});
+
+метод removeEventListener - можно отнимать
+10.	elem.removeEventListener('click', () => {
+11.	    console.log('div1');
+12.	});
+_________________________________________________________________________________________________________
+
+1.	(() => {}) === (() => {}) // false
+2.	{} === {} // false
+3.	[] === [] // false
+
+_________________________________________________________________________________________________________
+
+Если мы хотим отменять обработчики событий нам надо их выносить в отдельные функции:
+⦁	Хорошая практика обработчики выносить вотдельные функции
+
+1.	const elem = document.querySelector('.rect_div');
+2.	
+3.	elem.addEventListener('click', () => {
+4.	    console.log('div1');
+5.	});
+6.	
+7.	const handler = () => {
+8.	    console.log('div');
+9.	}
+10.	
+11.	elem.addEventListener('click', handler);
+12.	
+13.	elem.removeEventListener('click', handler);
+
+Сработает только: 'div1' , handler не сработает потому что мы его сначало назначили , потом удалили
+_________________________________________________________________________________________________________
+
+1.	const elem = document.querySelector('.rect_div');
+2.	
+3.	const logTarget = (text, color) => {
+4.	
+5.	    const eventsListElem = document.querySelector('.events-list');
+6.	    
+7.	    eventsListElem.innerHTML = `<span style="color: ${color}">${text}</span>` // Если += то элементы будут добавляться
+8.	}
+9.	
+10.	elem.addEventListener('click', () => logTarget('DIV', 'green'));
+_________________________________________________________________________________________________________
+
+innerHTML - опасно использовать если данные клиента , лучше использовать textContent , то текст выведится полностью 
+
+_________________________________________________________________________________________________________
+
+В метод addEventListener нужно добавлять имя функции, сейчас это исправим, для этого нужно объявить функцию в другом месте и закрепить контекст bind 
+
+1.	const divElem = document.querySelector('.rect_div');
+2.	const pElem = document.querySelector('.rect_p');
+3.	const spanElem = document.querySelector('.rect_span');
+4.	
+5.	const logTarget = (text, color) => {
+6.	
+7.	    const eventsListElem = document.querySelector('.events-list');
+8.	
+9.	    eventsListElem.innerHTML += `<span style="color: ${color}; margin-left: 8px;">${text}</span>`
+10.	}
+11.	
+12.	const logGreenDiv = logTarget.bind(null, 'DIV', 'green');
+13.	const logGreenP = logTarget.bind(null, 'P', 'green');
+14.	const logGreenSpan = logTarget.bind(null, 'SPAN', 'green');
+15.	
+16.	
+17.	divElem.addEventListener('click', logGreenDiv);
+18.	pElem.addEventListener('click', logGreenP);
+19.	spanElem.addEventListener('click', logGreenSpan);
+
+_________________________________________________________________________________________________________
+
+Наш обработчик на оранжевом div , но когда мы кликаем на внутрение элементы, то всеровно обработчик срабатывает и этот процесс называется всплытие.
+
+В обработчик событий мне всегда получаем объект event
+
+у этого объекта есть специальный метод event.stopPropagation(); - прекратить вспытие дальше
+ 
+Процесс всплытие: bubbling
+
+1.	ПРЕВРАТЬ ПРОЦЕСС ВСПЛЫТИЕ 
+2.	const divElem = document.querySelector('.rect_div');
+3.	const pElem = document.querySelector('.rect_p');
+4.	const spanElem = document.querySelector('.rect_span');
+5.	
+6.	const logTarget = (text, color) => {
+7.	
+8.	    const eventsListElem = document.querySelector('.events-list');
+9.	
+10.	    eventsListElem.innerHTML += `<span style="color: ${color}; margin-left: 8px;">${text}</span>`
+11.	}
+12.	
+13.	const logGreenDiv = logTarget.bind(null, 'DIV', 'green');
+14.	const logGreenP = logTarget.bind(null, 'P', 'green');
+15.	const logGreenSpan = logTarget.bind(null, 'SPAN', 'green');
+16.	
+17.	
+18.	divElem.addEventListener('click', logGreenDiv);
+19.	
+20.	pElem.addEventListener('click', event => {
+21.	    logGreenP();
+22.	    event.stopPropagation(); // всплытие остановилось
+23.	});
+24.	
+25.	spanElem.addEventListener('click', logGreenSpan); // отработал span
+
+_________________________________________________________________________________________________________
+
+У объекта event есть много свойств
+⦁	одно из полезных это свойство target
+_________________________________________________________________________________________________________
+
+Погружение (фаза перехвата) - capture , что бы словить событие на фазе погружение (перехвата), то
+
+мы воспользуемся третим аргументом { capture: true } , короткая запись просто true
+
+1.	const divElem = document.querySelector('.rect_div');
+2.	const pElem = document.querySelector('.rect_p');
+3.	const spanElem = document.querySelector('.rect_span');
+4.	
+5.	const logTarget = (text, color) => {
+6.	
+7.	    const eventsListElem = document.querySelector('.events-list');
+8.	
+9.	    eventsListElem.innerHTML += `<span style="color: ${color}; margin-left: 8px;">${text}</span>`
+10.	}
+11.	
+12.	const logGreyDiv = logTarget.bind(null, 'DIV', 'grey');
+13.	const logGreyP = logTarget.bind(null, 'P', 'grey');
+14.	const logGreySpan = logTarget.bind(null, 'SPAN', 'grey');
+15.	
+16.	divElem.addEventListener('click', logGreyDiv, { capture: true });
+17.	pElem.addEventListener('click', logGreyP, true);
+18.	spanElem.addEventListener('click', logGreySpan, true);
+ 
