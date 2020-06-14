@@ -7,3 +7,4 @@ const finishForm = () => {
     login.setAttribute('name', 'login');
     document.querySelector('.login-form').prepend(login);
 };
+finishForm()

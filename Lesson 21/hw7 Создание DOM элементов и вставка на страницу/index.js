@@ -3,3 +3,4 @@ const createButton = (buttonText) => {
     btn.innerHTML = buttonText;
     document.querySelector('body').append(btn);
 };
+createButton('Go')

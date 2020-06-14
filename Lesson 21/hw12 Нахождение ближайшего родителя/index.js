@@ -1,4 +1,4 @@
-export const getSection = num => {
+const getSection = num => {
     let arr = Array.from(document.querySelectorAll('span'))
         .reduce((acc, elem) => {
             if (elem.dataset.number == num) {
